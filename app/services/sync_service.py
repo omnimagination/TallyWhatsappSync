@@ -26,12 +26,6 @@ from app.services.xml_parser import XMLParser
 class SyncService:
     """
     Service for synchronizing data from Tally to local database.
-    
-    Features:
-    - Initial full sync
-    - Scheduled incremental sync
-    - On-demand ledger sync
-    - Sync logging and tracking
     """
     
     def __init__(self) -> None:
@@ -45,21 +39,11 @@ class SyncService:
         logger.info("SyncService initialized", category="sync")
     
     def test_connection(self) -> bool:
-        """
-        Test connection to Tally server.
-        
-        Returns:
-            True if connection successful
-        """
+        """Test connection to Tally server."""
         return self.client.test_connection()
     
     def sync_companies(self) -> Dict[str, Any]:
-        """
-        Sync all companies from Tally.
-        
-        Returns:
-            Sync result statistics
-        """
+        """Sync all companies from Tally."""
         sync_type = "companies"
         start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
@@ -75,7 +59,7 @@ class SyncService:
         
         try:
             # Get companies from Tally
-            xml_request = XMLBuilder.get_all_companies_request()
+            xml_request = XMLBuilder.get_company_info_request()
             xml_response = self.client.send_request(xml_request)
             
             if not xml_response:
@@ -125,15 +109,7 @@ class SyncService:
         return result
     
     def sync_ledgers(self, company_id: str = "") -> Dict[str, Any]:
-        """
-        Sync all ledgers from Tally.
-        
-        Args:
-            company_id: Specific company ID (empty = all)
-        
-        Returns:
-            Sync result statistics
-        """
+        """Sync all ledgers from Tally."""
         sync_type = "ledgers"
         start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
@@ -149,7 +125,7 @@ class SyncService:
         
         try:
             # Get ledgers from Tally
-            xml_request = XMLBuilder.get_ledgers_request(company_id)
+            xml_request = XMLBuilder.get_ledgers_request()
             xml_response = self.client.send_request(xml_request)
             
             if not xml_response:
@@ -195,15 +171,7 @@ class SyncService:
         return result
     
     def sync_vouchers(self, company_id: str = "") -> Dict[str, Any]:
-        """
-        Sync all vouchers from Tally.
-        
-        Args:
-            company_id: Specific company ID (empty = all)
-        
-        Returns:
-            Sync result statistics
-        """
+        """Sync all vouchers from Tally."""
         sync_type = "vouchers"
         start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
@@ -219,7 +187,7 @@ class SyncService:
         
         try:
             # Get vouchers from Tally
-            xml_request = XMLBuilder.get_vouchers_request(company_id)
+            xml_request = XMLBuilder.get_vouchers_request()
             xml_response = self.client.send_request(xml_request)
             
             if not xml_response:
@@ -264,66 +232,8 @@ class SyncService:
         
         return result
     
-    def sync_ledger_on_demand(self, ledger_name: str) -> Dict[str, Any]:
-        """
-        Sync specific ledger on demand (for search/validation).
-        
-        Args:
-            ledger_name: Ledger name to sync
-        
-        Returns:
-            Sync result
-        """
-        sync_type = "ledger_on_demand"
-        start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        
-        result = {
-            "success": False,
-            "ledger_data": None,
-            "error": None,
-        }
-        
-        try:
-            # Get ledger from Tally
-            xml_request = XMLBuilder.get_ledger_detail_request(ledger_name)
-            xml_response = self.client.send_request(xml_request)
-            
-            if not xml_response:
-                raise SyncError("No response from Tally server", sync_type=sync_type)
-            
-            # Parse ledger
-            ledgers = XMLParser.parse_ledgers(xml_response)
-            
-            if ledgers:
-                ledger_data = ledgers[0]
-                
-                # Update database
-                if self.ledger_repo.exists("ledger_id", ledger_data["ledger_id"]):
-                    self.ledger_repo.update_by_field(
-                        "ledger_id",
-                        ledger_data["ledger_id"],
-                        ledger_data,
-                    )
-                else:
-                    self.ledger_repo.create(ledger_data)
-                
-                result["success"] = True
-                result["ledger_data"] = ledger_data
-                logger.info(f"Ledger synced on-demand: {ledger_name}", category="sync")
-        
-        except Exception as e:
-            result["error"] = str(e)
-            logger.error(f"Failed to sync ledger on-demand: {e}", category="sync")
-        
-        return result
-    
     def full_sync(self) -> Dict[str, Any]:
-        """
-        Perform full synchronization (companies + ledgers + vouchers).
-        
-        Returns:
-            Combined sync results
-        """
+        """Perform full synchronization."""
         logger.info("Starting full synchronization", category="sync")
         
         results = {
@@ -349,12 +259,7 @@ class SyncService:
         return results
     
     def get_sync_status(self) -> Dict[str, Any]:
-        """
-        Get current sync status.
-        
-        Returns:
-            Sync status information
-        """
+        """Get current sync status."""
         recent_logs = self.sync_log_repo.get_recent(limit=10)
         stats = self.sync_log_repo.get_stats()
         
