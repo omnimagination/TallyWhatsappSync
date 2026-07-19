@@ -1,0 +1,120 @@
+app:
+  name: "TallySync"
+  version: "1.0.0"
+  developer: "OmniMagination"
+  
+tally:
+  host: "localhost"
+  port: 9000
+  protocol: "http"
+  timeout: 30
+  retry_attempts: 3
+  retry_delay: 2
+  
+database:
+  path: "data/tallysync.db"
+  backup_enabled: true
+  backup_interval: 24
+  backup_retention: 7
+  
+sync:
+  initial_sync_on_startup: false
+  auto_sync_enabled: false
+  sync_interval: 1440
+  sync_schedule: "daily"
+  sync_time: "02:00"
+  sync_company: true
+  sync_ledgers: true
+  sync_vouchers: true
+  sync_inventory: false
+  sync_reports: false
+  batch_size: 100
+  max_concurrent_requests: 5
+  
+search:
+  instant_search: true
+  search_delay: 300
+  validate_on_search: true
+  cache_results: true
+  max_results: 100
+  
+pdf:
+  output_folder: "exports/pdf"
+  auto_open: true
+  default_format: "A4"
+  orientation: "portrait"
+  include_logo: true
+  include_watermark: false
+  author: "TallySync"
+  creator: "TallySync v1.0.0"
+  
+whatsapp:
+  enabled: true
+  auto_attach: true
+  default_message: "Please find attached the ledger statement."
+  open_web: true
+  close_after_send: false
+  
+ui:
+  theme: "dark"
+  color_scheme: "blue"
+  appearance_mode: "dark"
+  width: 1280
+  height: 720
+  min_width: 1024
+  min_height: 600
+  resizable: true
+  sidebar_width: 240
+  sidebar_collapsed_width: 60
+  font_family: "Segoe UI"
+  font_size: 13
+  title_font_size: 20
+  
+logging:
+  enabled: true
+  level: "INFO"
+  log_folder: "logs"
+  max_file_size: 10485760
+  backup_count: 5
+  log_database: true
+  log_sync: true
+  log_xml: true
+  log_pdf: true
+  log_whatsapp: true
+  log_ui: false
+  console_output: true
+  colored_output: true
+  
+folders:
+  data: "data"
+  exports: "exports"
+  logs: "logs"
+  temp: "temp"
+  backups: "backups"
+  assets: "app/assets"
+  
+security:
+  encrypt_database: false
+  encrypt_config: false
+  require_password: false
+  session_timeout: 0
+  
+performance:
+  lazy_load: true
+  cache_enabled: true
+  cache_size: 100
+  preload_data: false
+  
+notifications:
+  enabled: true
+  show_sync_complete: true
+  show_errors: true
+  show_warnings: true
+  duration: 5000
+  position: "bottom-right"
+  
+advanced:
+  debug_mode: false
+  developer_mode: false
+  telemetry_enabled: false
+  auto_update_check: true
