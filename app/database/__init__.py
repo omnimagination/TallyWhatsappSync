@@ -7,7 +7,7 @@ Author: OmniMagination
 Version: 1.0.0
 """
 
-from app.database.connection import DatabaseConnection
+from app.database.connection import DatabaseConnection, db
 from app.database.models import (
     BaseModel,
     Company,
@@ -26,6 +26,7 @@ from app.database.repositories import (
 
 __all__ = [
     "DatabaseConnection",
+    "db",
     "BaseModel",
     "Company",
     "Ledger",
