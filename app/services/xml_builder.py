@@ -12,240 +12,187 @@ from datetime import datetime
 
 
 class XMLBuilder:
-    """
-    Builder class for creating Tally XML requests.
-    
-    All requests follow Tally's XML format specification.
-    """
-    
-    @staticmethod
-    def create_envelope(request: str) -> str:
-        """
-        Create XML envelope for request.
-        
-        Args:
-            request: TDL request content
-        
-        Returns:
-            Complete XML envelope string
-        """
-        return f"""<?xml version="1.0" encoding="UTF-8"?>
-<ENVELOPE>
-    <HEADER>
-        <VERSION>1</VERSION>
-        <TALLYREQUEST>Export</TALLYREQUEST>
-        <TYPE>Data</TYPE>
-        <ID>{request}</ID>
-    </HEADER>
-    <BODY>
-        <DESC>
-            <STATICVARIABLES>
-                <SVEXPORTFORMAT>app\services\tally_client.pySysName:XML</SVEXPORTFORMAT>
-            </STATICVARIABLES>
-        </DESC>
-    </BODY>
-</ENVELOPE>"""
+    """Builder class for creating Tally XML requests."""
     
     @staticmethod
     def get_company_info_request(company_name: str = "") -> str:
-        """
-        Build request for company information.
-        
-        Args:
-            company_name: Specific company name (empty = all)
-        
-        Returns:
-            XML request string
-        """
-        if company_name:
-            request = f"CompanyInfo.{company_name}"
-        else:
-            request = "CompanyInfo"
-        
-        return XMLBuilder.create_envelope(request)
+        """Build request for company information."""
+        return (
+            '<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<ENVELOPE>\n'
+            '    <HEADER>\n'
+            '        <VERSION>1</VERSION>\n'
+            '        <TALLYREQUEST>Export</TALLYREQUEST>\n'
+            '        <TYPE>Collection</TYPE>\n'
+            '        <ID>Company</ID>\n'
+            '    </HEADER>\n'
+            '    <BODY>\n'
+            '        <DESC>\n'
+            '            <STATICVARIABLES>\n'
+            '                <SVEXPORTFORMAT>)SysName:XML</SVEXPORTFORMAT>\n'
+            '            </STATICVARIABLES>\n'
+            '            <TDL>\n'
+            '                <TDLMESSAGE>\n'
+            '                    <COLLECTION NAME="CompanyCollection">\n'
+            '                        <TYPE>Company</TYPE>\n'
+            '                        <FETCH>Name</FETCH>\n'
+            '                        <FETCH>Address</FETCH>\n'
+            '                        <FETCH>Phone</FETCH>\n'
+            '                        <FETCH>Email</FETCH>\n'
+            '                    </COLLECTION>\n'
+            '                </TDLMESSAGE>\n'
+            '            </TDL>\n'
+            '        </DESC>\n'
+            '    </BODY>\n'
+            '</ENVELOPE>'
+        )
     
     @staticmethod
     def get_ledgers_request(company_name: str = "") -> str:
-        """
-        Build request for all ledgers.
-        
-        Args:
-            company_name: Company name
-        
-        Returns:
-            XML request string
-        """
-        return XMLBuilder.create_envelope(f"Ledger.{company_name}")
+        """Build request for all ledgers - WORKING FORMAT."""
+        return (
+            '<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<ENVELOPE>\n'
+            '    <HEADER>\n'
+            '        <VERSION>1</VERSION>\n'
+            '        <TALLYREQUEST>Export</TALLYREQUEST>\n'
+            '        <TYPE>Collection</TYPE>\n'
+            '        <ID>Ledger</ID>\n'
+            '    </HEADER>\n'
+            '    <BODY>\n'
+            '        <DESC>\n'
+            '            <STATICVARIABLES>\n'
+            '                <SVEXPORTFORMAT>)SysName:XML</SVEXPORTFORMAT>\n'
+            '            </STATICVARIABLES>\n'
+            '            <TDL>\n'
+            '                <TDLMESSAGE>\n'
+            '                    <COLLECTION NAME="LedgerCollection">\n'
+            '                        <TYPE>Ledger</TYPE>\n'
+            '                        <FETCH>Name</FETCH>\n'
+            '                        <FETCH>Parent</FETCH>\n'
+            '                        <FETCH>Group</FETCH>\n'
+            '                        <FETCH>OpeningBalance</FETCH>\n'
+            '                        <FETCH>ClosingBalance</FETCH>\n'
+            '                        <FETCH>Phone</FETCH>\n'
+            '                        <FETCH>Email</FETCH>\n'
+            '                        <FETCH>Address</FETCH>\n'
+            '                        <FETCH>TaxRegNumber</FETCH>\n'
+            '                        <FETCH>IncomeTaxNumber</FETCH>\n'
+            '                        <FETCH>ContactPerson</FETCH>\n'
+            '                        <FETCH>CreditLimit</FETCH>\n'
+            '                        <FETCH>CreditDays</FETCH>\n'
+            '                    </COLLECTION>\n'
+            '                </TDLMESSAGE>\n'
+            '            </TDL>\n'
+            '        </DESC>\n'
+            '    </BODY>\n'
+            '</ENVELOPE>'
+        )
     
     @staticmethod
     def get_ledger_detail_request(ledger_name: str, company_name: str = "") -> str:
-        """
-        Build request for specific ledger details.
-        
-        Args:
-            ledger_name: Ledger name
-            company_name: Company name
-        
-        Returns:
-            XML request string
-        """
-        return XMLBuilder.create_envelope(f"Ledger.{ledger_name}")
+        """Build request for specific ledger details."""
+        return (
+            '<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<ENVELOPE>\n'
+            '    <HEADER>\n'
+            '        <VERSION>1</VERSION>\n'
+            '        <TALLYREQUEST>Export</TALLYREQUEST>\n'
+            '        <TYPE>Collection</TYPE>\n'
+            '        <ID>Ledger</ID>\n'
+            '    </HEADER>\n'
+            '    <BODY>\n'
+            '        <DESC>\n'
+            '            <STATICVARIABLES>\n'
+            '                <SVEXPORTFORMAT>)SysName:XML</SVEXPORTFORMAT>\n'
+            f'                <SVLedgerName>{ledger_name}</SVLedgerName>\n'
+            '            </STATICVARIABLES>\n'
+            '            <TDL>\n'
+            '                <TDLMESSAGE>\n'
+            '                    <COLLECTION NAME="SingleLedger">\n'
+            '                        <TYPE>Ledger</TYPE>\n'
+            '                        <FETCH>Name</FETCH>\n'
+            '                        <FETCH>Parent</FETCH>\n'
+            '                        <FETCH>ClosingBalance</FETCH>\n'
+            '                    </COLLECTION>\n'
+            '                </TDLMESSAGE>\n'
+            '            </TDL>\n'
+            '        </DESC>\n'
+            '    </BODY>\n'
+            '</ENVELOPE>'
+        )
     
     @staticmethod
-    def get_vouchers_request(
-        company_name: str = "",
-        from_date: str = "",
-        to_date: str = "",
-    ) -> str:
-        """
-        Build request for vouchers.
-        
-        Args:
-            company_name: Company name
-            from_date: Start date (YYYYMMDD)
-            to_date: End date (YYYYMMDD)
-        
-        Returns:
-            XML request string
-        """
-        return XMLBuilder.create_envelope(f"Voucher.{company_name}")
+    def get_vouchers_request(company_name: str = "", from_date: str = "", to_date: str = "") -> str:
+        """Build request for vouchers."""
+        return (
+            '<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<ENVELOPE>\n'
+            '    <HEADER>\n'
+            '        <VERSION>1</VERSION>\n'
+            '        <TALLYREQUEST>Export</TALLYREQUEST>\n'
+            '        <TYPE>Collection</TYPE>\n'
+            '        <ID>Voucher</ID>\n'
+            '    </HEADER>\n'
+            '    <BODY>\n'
+            '        <DESC>\n'
+            '            <STATICVARIABLES>\n'
+            '                <SVEXPORTFORMAT>)SysName:XML</SVEXPORTFORMAT>\n'
+            '            </STATICVARIABLES>\n'
+            '            <TDL>\n'
+            '                <TDLMESSAGE>\n'
+            '                    <COLLECTION NAME="VoucherCollection">\n'
+            '                        <TYPE>Voucher</TYPE>\n'
+            '                        <FETCH>Name</FETCH>\n'
+            '                        <FETCH>VoucherTypeName</FETCH>\n'
+            '                        <FETCH>VoucherNumber</FETCH>\n'
+            '                        <FETCH>Date</FETCH>\n'
+            '                        <FETCH>Amount</FETCH>\n'
+            '                        <FETCH>Narration</FETCH>\n'
+            '                    </COLLECTION>\n'
+            '                </TDLMESSAGE>\n'
+            '            </TDL>\n'
+            '        </DESC>\n'
+            '    </BODY>\n'
+            '</ENVELOPE>'
+        )
     
     @staticmethod
     def get_voucher_type_request(company_name: str = "") -> str:
-        """
-        Build request for voucher types.
-        
-        Args:
-            company_name: Company name
-        
-        Returns:
-            XML request string
-        """
-        return XMLBuilder.create_envelope(f"VoucherType.{company_name}")
-    
-    @staticmethod
-    def get_stock_items_request(company_name: str = "") -> str:
-        """
-        Build request for stock items/inventory.
-        
-        Args:
-            company_name: Company name
-        
-        Returns:
-            XML request string
-        """
-        return XMLBuilder.create_envelope(f"StockItem.{company_name}")
-    
-    @staticmethod
-    def get_outstanding_request(ledger_name: str, company_name: str = "") -> str:
-        """
-        Build request for outstanding details.
-        
-        Args:
-            ledger_name: Ledger name
-            company_name: Company name
-        
-        Returns:
-            XML request string
-        """
-        return XMLBuilder.create_envelope(f"Outstanding.{ledger_name}")
-    
-    @staticmethod
-    def get_ledger_statement_request(
-        ledger_name: str,
-        from_date: str = "",
-        to_date: str = "",
-        company_name: str = "",
-    ) -> str:
-        """
-        Build request for ledger statement.
-        
-        Args:
-            ledger_name: Ledger name
-            from_date: Start date
-            to_date: End date
-            company_name: Company name
-        
-        Returns:
-            XML request string
-        """
-        return XMLBuilder.create_envelope(f"LedgerStatement.{ledger_name}")
-    
-    @staticmethod
-    def create_tdl_request(tdl_content: str) -> str:
-        """
-        Create custom TDL request.
-        
-        Args:
-            tdl_content: TDL definition content
-        
-        Returns:
-            XML request string
-        """
-        return f"""<?xml version="1.0" encoding="UTF-8"?>
-<ENVELOPE>
-    <HEADER>
-        <VERSION>1</VERSION>
-        <TALLYREQUEST>Export</TALLYREQUEST>
-        <TYPE>Data</TYPE>
-        <ID>Custom Export</ID>
-    </HEADER>
-    <BODY>
-        <DESC>
-            <STATICVARIABLES>
-                <SVEXPORTFORMAT>app\services\tally_client.pySysName:XML</SVEXPORTFORMAT>
-                <SVTDLRECEIVEVARIABLES>Yes</SVTDLRECEIVEVARIABLES>
-            </STATICVARIABLES>
-            <TDL>
-                <TDLMESSAGE>
-                    {tdl_content}
-                </TDLMESSAGE>
-            </TDL>
-        </DESC>
-    </BODY>
-</ENVELOPE>"""
-    
-    @staticmethod
-    def get_all_companies_request() -> str:
-        """
-        Build request for list of all companies.
-        
-        Returns:
-            XML request string
-        """
-        return """<?xml version="1.0" encoding="UTF-8"?>
-<ENVELOPE>
-    <HEADER>
-        <VERSION>1</VERSION>
-        <TALLYREQUEST>Export</TALLYREQUEST>
-        <TYPE>Data</TYPE>
-        <ID>List of Companies</ID>
-    </HEADER>
-    <BODY>
-        <DESC>
-            <STATICVARIABLES>
-                <SVEXPORTFORMAT>app\services\tally_client.pySysName:XML</SVEXPORTFORMAT>
-            </STATICVARIABLES>
-        </DESC>
-    </BODY>
-</ENVELOPE>"""
+        """Build request for voucher types."""
+        return (
+            '<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<ENVELOPE>\n'
+            '    <HEADER>\n'
+            '        <VERSION>1</VERSION>\n'
+            '        <TALLYREQUEST>Export</TALLYREQUEST>\n'
+            '        <TYPE>Collection</TYPE>\n'
+            '        <ID>VoucherType</ID>\n'
+            '    </HEADER>\n'
+            '    <BODY>\n'
+            '        <DESC>\n'
+            '            <STATICVARIABLES>\n'
+            '                <SVEXPORTFORMAT>)SysName:XML</SVEXPORTFORMAT>\n'
+            '            </STATICVARIABLES>\n'
+            '            <TDL>\n'
+            '                <TDLMESSAGE>\n'
+            '                    <COLLECTION NAME="VoucherTypeCollection">\n'
+            '                        <TYPE>VoucherType</TYPE>\n'
+            '                        <FETCH>Name</FETCH>\n'
+            '                    </COLLECTION>\n'
+            '                </TDLMESSAGE>\n'
+            '            </TDL>\n'
+            '        </DESC>\n'
+            '    </BODY>\n'
+            '</ENVELOPE>'
+        )
     
     @staticmethod
     def format_date_for_tally(date_str: str) -> str:
-        """
-        Format date for Tally request.
-        
-        Args:
-            date_str: Date string
-        
-        Returns:
-            Formatted date (YYYYMMDD)
-        """
+        """Format date for Tally request."""
         if not date_str:
             return ""
-        
         try:
-            # Try parsing common formats
             for fmt in ["%Y-%m-%d", "%d-%m-%Y", "%Y%m%d"]:
                 try:
                     dt = datetime.strptime(date_str, fmt)

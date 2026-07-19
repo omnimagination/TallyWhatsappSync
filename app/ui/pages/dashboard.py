@@ -11,6 +11,12 @@ import customtkinter as ctk
 from typing import Any
 from app.ui.styles import UIStyles
 from app.core.logger import logger
+from app.database.repositories import (
+    CompanyRepository,
+    LedgerRepository,
+    VoucherRepository,
+    SyncLogRepository,
+)
 
 
 class DashboardPage(ctk.CTkScrollableFrame):
@@ -21,6 +27,11 @@ class DashboardPage(ctk.CTkScrollableFrame):
     def __init__(self, master: Any, **kwargs) -> None:
         super().__init__(master, **kwargs)
         self.configure(fg_color=UIStyles.COLOR_BG_DARK)
+        
+        self.company_repo = CompanyRepository()
+        self.ledger_repo = LedgerRepository()
+        self.voucher_repo = VoucherRepository()
+        self.sync_log_repo = SyncLogRepository()
         
         self._setup_ui()
     
@@ -58,10 +69,9 @@ class DashboardPage(ctk.CTkScrollableFrame):
         )
         title.pack(side="left")
         
-        # Refresh button
         refresh_btn = ctk.CTkButton(
             header_frame,
-            text="?? Refresh",
+            text="Refresh",
             command=self.refresh,
             height=35,
             width=100,
@@ -70,38 +80,55 @@ class DashboardPage(ctk.CTkScrollableFrame):
     
     def _create_stats_cards(self) -> None:
         """Create statistics cards."""
-        # Section title
-        title = ctk.CTkLabel(
-            self,
-            text="Overview",
-            font=ctk.CTkFont(
-                family=UIStyles.FONT_FAMILY,
-                size=UIStyles.FONT_SIZE_HEADING,
-                weight="bold",
-            ),
-            text_color=UIStyles.COLOR_TEXT_PRIMARY,
-        )
-        title.pack(anchor="w", pady=(10, 10))
+        # Get real data from database
+        stats = self._get_stats()
         
-        # Cards container
         cards_frame = ctk.CTkFrame(
             self,
             fg_color="transparent",
         )
         cards_frame.pack(fill="x", pady=10)
         
-        # Card data
-        stats = [
-            ("Companies", "0", "??", UIStyles.COLOR_PRIMARY),
-            ("Ledgers", "0", "??", UIStyles.COLOR_SECONDARY),
-            ("Vouchers", "0", "??", UIStyles.COLOR_SUCCESS),
-            ("Sync Status", "Ready", "??", UIStyles.COLOR_INFO),
+        # Card data with real values
+        card_data = [
+            ("Companies", str(stats["companies"]), "[Companies]", UIStyles.COLOR_PRIMARY),
+            ("Ledgers", str(stats["ledgers"]), "[Ledgers]", UIStyles.COLOR_SECONDARY),
+            ("Vouchers", str(stats["vouchers"]), "[Vouchers]", UIStyles.COLOR_SUCCESS),
+            ("Last Sync", stats["last_sync"], "[Sync]", UIStyles.COLOR_INFO),
         ]
         
-        # Create cards in a row using pack with side
-        for label, value, icon, color in stats:
+        for label, value, icon, color in card_data:
             card = self._create_stat_card(cards_frame, label, value, icon, color)
             card.pack(side="left", padx=10, expand=True, fill="both")
+    
+    def _get_stats(self) -> dict:
+        """Get statistics from database."""
+        try:
+            companies = self.company_repo.get_count()
+            ledgers = self.ledger_repo.get_count()
+            vouchers = self.voucher_repo.get_count()
+            
+            # Get last sync time
+            recent_logs = self.sync_log_repo.get_recent(limit=1)
+            if recent_logs:
+                last_sync = recent_logs[0].formatted_start_time or "Never"
+            else:
+                last_sync = "Never"
+            
+            return {
+                "companies": companies,
+                "ledgers": ledgers,
+                "vouchers": vouchers,
+                "last_sync": last_sync,
+            }
+        except Exception as e:
+            logger.error(f"Failed to get stats: {e}", category="ui")
+            return {
+                "companies": 0,
+                "ledgers": 0,
+                "vouchers": 0,
+                "last_sync": "Error",
+            }
     
     def _create_stat_card(
         self,
@@ -119,13 +146,14 @@ class DashboardPage(ctk.CTkScrollableFrame):
             width=200,
             height=140,
         )
-        card.pack_propagate(False)  # Prevent resizing
+        card.pack_propagate(False)
         
         # Icon
         icon_label = ctk.CTkLabel(
             card,
             text=icon,
-            font=ctk.CTkFont(size=30),
+            font=ctk.CTkFont(size=20, weight="bold"),
+            text_color=color,
         )
         icon_label.pack(pady=(15, 5))
         
@@ -138,7 +166,7 @@ class DashboardPage(ctk.CTkScrollableFrame):
                 size=24,
                 weight="bold",
             ),
-            text_color=color,
+            text_color=UIStyles.COLOR_TEXT_PRIMARY,
         )
         value_label.pack()
         
@@ -167,7 +195,7 @@ class DashboardPage(ctk.CTkScrollableFrame):
         
         title = ctk.CTkLabel(
             activity_frame,
-            text="Recent Activity",
+            text="Recent Sync Activity",
             font=ctk.CTkFont(
                 family=UIStyles.FONT_FAMILY,
                 size=UIStyles.FONT_SIZE_HEADING,
@@ -177,23 +205,79 @@ class DashboardPage(ctk.CTkScrollableFrame):
         )
         title.pack(padx=15, pady=(15, 10))
         
-        # Activity list (placeholder)
-        activity_list = ctk.CTkFrame(
-            activity_frame,
-            fg_color="transparent",
+        # Get recent sync logs
+        try:
+            logs = self.sync_log_repo.get_recent(limit=5)
+            
+            if not logs:
+                no_activity = ctk.CTkLabel(
+                    activity_frame,
+                    text="No sync activity yet. Go to Sync Center to start.",
+                    font=ctk.CTkFont(
+                        family=UIStyles.FONT_FAMILY,
+                        size=UIStyles.FONT_SIZE_NORMAL,
+                    ),
+                    text_color=UIStyles.COLOR_TEXT_MUTED,
+                )
+                no_activity.pack(pady=20)
+            else:
+                for log in logs:
+                    self._create_activity_item(activity_frame, log)
+        except Exception as e:
+            logger.error(f"Failed to load activity: {e}", category="ui")
+    
+    def _create_activity_item(self, master: Any, log) -> None:
+        """Create an activity item."""
+        item_frame = ctk.CTkFrame(
+            master,
+            fg_color=UIStyles.COLOR_BG_INPUT,
+            corner_radius=UIStyles.CORNER_RADIUS_SMALL,
         )
-        activity_list.pack(fill="x", padx=15, pady=10)
+        item_frame.pack(fill="x", padx=15, pady=2)
         
-        no_activity = ctk.CTkLabel(
-            activity_list,
-            text="No recent activity - Run a sync to see data",
+        status_color = UIStyles.COLOR_SUCCESS if log.is_success else UIStyles.COLOR_ERROR
+        
+        status_dot = ctk.CTkLabel(
+            item_frame,
+            text="?",
+            font=ctk.CTkFont(size=12),
+            text_color=status_color,
+        )
+        status_dot.pack(side="left", padx=(10, 10), pady=8)
+        
+        type_label = ctk.CTkLabel(
+            item_frame,
+            text=log.sync_type.upper(),
             font=ctk.CTkFont(
                 family=UIStyles.FONT_FAMILY,
-                size=UIStyles.FONT_SIZE_NORMAL,
+                size=UIStyles.FONT_SIZE_SMALL,
+                weight="bold",
             ),
-            text_color=UIStyles.COLOR_TEXT_MUTED,
+            text_color=UIStyles.COLOR_TEXT_PRIMARY,
         )
-        no_activity.pack(pady=20)
+        type_label.pack(side="left", padx=(0, 20), pady=8)
+        
+        time_label = ctk.CTkLabel(
+            item_frame,
+            text=log.formatted_start_time or "Unknown",
+            font=ctk.CTkFont(
+                family=UIStyles.FONT_FAMILY,
+                size=UIStyles.FONT_SIZE_SMALL,
+            ),
+            text_color=UIStyles.COLOR_TEXT_SECONDARY,
+        )
+        time_label.pack(side="left", pady=8)
+        
+        records_label = ctk.CTkLabel(
+            item_frame,
+            text=f"{log.records_processed} records",
+            font=ctk.CTkFont(
+                family=UIStyles.FONT_FAMILY,
+                size=UIStyles.FONT_SIZE_SMALL,
+            ),
+            text_color=UIStyles.COLOR_TEXT_SECONDARY,
+        )
+        records_label.pack(side="right", padx=(0, 10), pady=8)
     
     def _create_quick_actions(self) -> None:
         """Create quick actions section."""
@@ -216,7 +300,6 @@ class DashboardPage(ctk.CTkScrollableFrame):
         )
         title.pack(padx=15, pady=(15, 10))
         
-        # Action buttons
         buttons_frame = ctk.CTkFrame(
             actions_frame,
             fg_color="transparent",
@@ -224,10 +307,10 @@ class DashboardPage(ctk.CTkScrollableFrame):
         buttons_frame.pack(fill="x", padx=15, pady=10)
         
         actions = [
-            ("?? Sync Now", "sync"),
-            ("?? View Ledgers", "ledgers"),
-            ("?? View Vouchers", "vouchers"),
-            ("?? Settings", "settings"),
+            ("[Sync Now]", "sync"),
+            ("[Ledgers]", "ledgers"),
+            ("[Vouchers]", "vouchers"),
+            ("[Settings]", "settings"),
         ]
         
         for text, page in actions:
@@ -236,19 +319,18 @@ class DashboardPage(ctk.CTkScrollableFrame):
                 text=text,
                 command=lambda p=page: self._navigate(p),
                 height=40,
-                width=150,
+                width=120,
             )
             btn.pack(side="left", padx=5, pady=5)
     
     def _navigate(self, page: str) -> None:
-        """Navigate to page (callback to main window)."""
+        """Navigate to page."""
         logger.debug(f"Quick action navigation: {page}", category="ui")
     
     def refresh(self) -> None:
         """Refresh dashboard data."""
         logger.debug("Dashboard refreshed", category="ui")
-        self.update_status("Dashboard refreshed")
-    
-    def update_status(self, message: str) -> None:
-        """Update status (called from main window)."""
-        pass
+        # Rebuild stats cards
+        for widget in self.winfo_children():
+            widget.destroy()
+        self._setup_ui()

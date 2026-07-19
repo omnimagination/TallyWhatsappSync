@@ -14,7 +14,6 @@ import threading
 
 from app.ui.styles import UIStyles
 from app.core.logger import logger
-from app.core.exceptions import TallyConnectionError
 from app.services.sync_service import SyncService
 from app.database.repositories import SyncLogRepository
 
@@ -53,20 +52,13 @@ class SyncCenterPage(ctk.CTkScrollableFrame):
     
     def _create_header(self) -> None:
         """Create page header."""
-        header_frame = ctk.CTkFrame(
-            self,
-            fg_color="transparent",
-        )
+        header_frame = ctk.CTkFrame(self, fg_color="transparent")
         header_frame.pack(fill="x", pady=(0, 20))
         
         title = ctk.CTkLabel(
             header_frame,
             text="Sync Center",
-            font=ctk.CTkFont(
-                family=UIStyles.FONT_FAMILY,
-                size=UIStyles.FONT_SIZE_TITLE,
-                weight="bold",
-            ),
+            font=ctk.CTkFont(family=UIStyles.FONT_FAMILY, size=UIStyles.FONT_SIZE_TITLE, weight="bold"),
             text_color=UIStyles.COLOR_TEXT_PRIMARY,
         )
         title.pack(side="left")
@@ -83,20 +75,13 @@ class SyncCenterPage(ctk.CTkScrollableFrame):
         title = ctk.CTkLabel(
             conn_frame,
             text="Tally Connection",
-            font=ctk.CTkFont(
-                family=UIStyles.FONT_FAMILY,
-                size=UIStyles.FONT_SIZE_HEADING,
-                weight="bold",
-            ),
+            font=ctk.CTkFont(family=UIStyles.FONT_FAMILY, size=UIStyles.FONT_SIZE_HEADING, weight="bold"),
             text_color=UIStyles.COLOR_TEXT_PRIMARY,
         )
         title.pack(padx=15, pady=(15, 10))
         
         # Status indicator
-        status_frame = ctk.CTkFrame(
-            conn_frame,
-            fg_color="transparent",
-        )
+        status_frame = ctk.CTkFrame(conn_frame, fg_color="transparent")
         status_frame.pack(fill="x", padx=15, pady=10)
         
         self.connection_indicator = ctk.CTkLabel(
@@ -110,10 +95,7 @@ class SyncCenterPage(ctk.CTkScrollableFrame):
         self.connection_status = ctk.CTkLabel(
             status_frame,
             text="Disconnected",
-            font=ctk.CTkFont(
-                family=UIStyles.FONT_FAMILY,
-                size=UIStyles.FONT_SIZE_MEDIUM,
-            ),
+            font=ctk.CTkFont(family=UIStyles.FONT_FAMILY, size=UIStyles.FONT_SIZE_MEDIUM),
             text_color=UIStyles.COLOR_TEXT_PRIMARY,
         )
         self.connection_status.pack(side="left")
@@ -132,10 +114,7 @@ class SyncCenterPage(ctk.CTkScrollableFrame):
         info_label = ctk.CTkLabel(
             conn_frame,
             text="URL: http://localhost:9000",
-            font=ctk.CTkFont(
-                family=UIStyles.FONT_FAMILY,
-                size=UIStyles.FONT_SIZE_SMALL,
-            ),
+            font=ctk.CTkFont(family=UIStyles.FONT_FAMILY, size=UIStyles.FONT_SIZE_SMALL),
             text_color=UIStyles.COLOR_TEXT_SECONDARY,
         )
         info_label.pack(padx=15, pady=(0, 15))
@@ -152,71 +131,57 @@ class SyncCenterPage(ctk.CTkScrollableFrame):
         title = ctk.CTkLabel(
             sync_frame,
             text="Synchronization",
-            font=ctk.CTkFont(
-                family=UIStyles.FONT_FAMILY,
-                size=UIStyles.FONT_SIZE_HEADING,
-                weight="bold",
-            ),
+            font=ctk.CTkFont(family=UIStyles.FONT_FAMILY, size=UIStyles.FONT_SIZE_HEADING, weight="bold"),
             text_color=UIStyles.COLOR_TEXT_PRIMARY,
         )
         title.pack(padx=15, pady=(15, 10))
         
         # Sync buttons
-        buttons_frame = ctk.CTkFrame(
-            sync_frame,
-            fg_color="transparent",
-        )
+        buttons_frame = ctk.CTkFrame(sync_frame, fg_color="transparent")
         buttons_frame.pack(fill="x", padx=15, pady=10)
         
-        # Full Sync
-        full_sync_btn = ctk.CTkButton(
+        self.full_sync_btn = ctk.CTkButton(
             buttons_frame,
-            text="?? Full Sync",
+            text="Full Sync",
             command=self._start_full_sync,
             height=45,
             width=150,
             fg_color=UIStyles.COLOR_PRIMARY,
         )
-        full_sync_btn.pack(side="left", padx=5)
+        self.full_sync_btn.pack(side="left", padx=5)
         
-        # Companies Only
-        companies_btn = ctk.CTkButton(
+        self.companies_btn = ctk.CTkButton(
             buttons_frame,
-            text="?? Companies",
+            text="Companies",
             command=self._start_companies_sync,
             height=45,
             width=120,
         )
-        companies_btn.pack(side="left", padx=5)
+        self.companies_btn.pack(side="left", padx=5)
         
-        # Ledgers Only
-        ledgers_btn = ctk.CTkButton(
+        self.ledgers_btn = ctk.CTkButton(
             buttons_frame,
-            text="?? Ledgers",
+            text="Ledgers",
             command=self._start_ledgers_sync,
             height=45,
             width=120,
         )
-        ledgers_btn.pack(side="left", padx=5)
+        self.ledgers_btn.pack(side="left", padx=5)
         
-        # Vouchers Only
-        vouchers_btn = ctk.CTkButton(
+        self.vouchers_btn = ctk.CTkButton(
             buttons_frame,
-            text="?? Vouchers",
+            text="Vouchers",
             command=self._start_vouchers_sync,
             height=45,
             width=120,
         )
-        vouchers_btn.pack(side="left", padx=5)
+        self.vouchers_btn.pack(side="left", padx=5)
         
         # Description
         desc_label = ctk.CTkLabel(
             sync_frame,
             text="Click a button to start synchronization with TallyPrime",
-            font=ctk.CTkFont(
-                family=UIStyles.FONT_FAMILY,
-                size=UIStyles.FONT_SIZE_SMALL,
-            ),
+            font=ctk.CTkFont(family=UIStyles.FONT_FAMILY, size=UIStyles.FONT_SIZE_SMALL),
             text_color=UIStyles.COLOR_TEXT_MUTED,
         )
         desc_label.pack(padx=15, pady=(0, 15))
@@ -233,11 +198,7 @@ class SyncCenterPage(ctk.CTkScrollableFrame):
         title = ctk.CTkLabel(
             progress_frame,
             text="Progress",
-            font=ctk.CTkFont(
-                family=UIStyles.FONT_FAMILY,
-                size=UIStyles.FONT_SIZE_HEADING,
-                weight="bold",
-            ),
+            font=ctk.CTkFont(family=UIStyles.FONT_FAMILY, size=UIStyles.FONT_SIZE_HEADING, weight="bold"),
             text_color=UIStyles.COLOR_TEXT_PRIMARY,
         )
         title.pack(padx=15, pady=(15, 10))
@@ -256,10 +217,7 @@ class SyncCenterPage(ctk.CTkScrollableFrame):
         self.progress_label = ctk.CTkLabel(
             progress_frame,
             text="Ready",
-            font=ctk.CTkFont(
-                family=UIStyles.FONT_FAMILY,
-                size=UIStyles.FONT_SIZE_NORMAL,
-            ),
+            font=ctk.CTkFont(family=UIStyles.FONT_FAMILY, size=UIStyles.FONT_SIZE_NORMAL),
             text_color=UIStyles.COLOR_TEXT_SECONDARY,
         )
         self.progress_label.pack(padx=15, pady=(0, 15))
@@ -276,26 +234,19 @@ class SyncCenterPage(ctk.CTkScrollableFrame):
         title = ctk.CTkLabel(
             history_frame,
             text="Sync History",
-            font=ctk.CTkFont(
-                family=UIStyles.FONT_FAMILY,
-                size=UIStyles.FONT_SIZE_HEADING,
-                weight="bold",
-            ),
+            font=ctk.CTkFont(family=UIStyles.FONT_FAMILY, size=UIStyles.FONT_SIZE_HEADING, weight="bold"),
             text_color=UIStyles.COLOR_TEXT_PRIMARY,
         )
         title.pack(padx=15, pady=(15, 10))
         
         # History list
-        self.history_frame = ctk.CTkFrame(
-            history_frame,
-            fg_color="transparent",
-        )
+        self.history_frame = ctk.CTkFrame(history_frame, fg_color="transparent")
         self.history_frame.pack(fill="both", expand=True, padx=15, pady=10)
         
         # Refresh button
         refresh_btn = ctk.CTkButton(
             history_frame,
-            text="?? Refresh History",
+            text="Refresh History",
             command=self._load_sync_history,
             height=35,
             width=150,
@@ -304,7 +255,7 @@ class SyncCenterPage(ctk.CTkScrollableFrame):
     
     def _test_connection(self) -> None:
         """Test connection to Tally server."""
-        self._set_status("Testing connection...", "info")
+        self.progress_label.configure(text="Testing connection...", text_color=UIStyles.COLOR_INFO)
         
         try:
             if self.sync_service is None:
@@ -313,82 +264,59 @@ class SyncCenterPage(ctk.CTkScrollableFrame):
             connected = self.sync_service.test_connection()
             
             if connected:
-                self._set_connection_status(True)
-                self._set_status("Connection successful!", "success")
+                self.connection_indicator.configure(text_color=UIStyles.COLOR_SUCCESS)
+                self.connection_status.configure(text="Connected")
+                self.progress_label.configure(text="Connection successful!", text_color=UIStyles.COLOR_SUCCESS)
             else:
-                self._set_connection_status(False)
-                self._set_status("Connection failed - Is Tally running?", "error")
+                self.connection_indicator.configure(text_color=UIStyles.COLOR_ERROR)
+                self.connection_status.configure(text="Disconnected")
+                self.progress_label.configure(text="Connection failed - Is Tally running?", text_color=UIStyles.COLOR_ERROR)
         
         except Exception as e:
-            self._set_connection_status(False)
-            self._set_status(f"Error: {str(e)}", "error")
-    
-    def _set_connection_status(self, connected: bool) -> None:
-        """Update connection status UI."""
-        if connected:
-            self.connection_indicator.configure(text_color=UIStyles.COLOR_SUCCESS)
-            self.connection_status.configure(text="Connected")
-        else:
             self.connection_indicator.configure(text_color=UIStyles.COLOR_ERROR)
             self.connection_status.configure(text="Disconnected")
+            self.progress_label.configure(text=f"Error: {str(e)}", text_color=UIStyles.COLOR_ERROR)
     
-    def _set_status(self, message: str, level: str = "info") -> None:
-        """Update progress status."""
-        self.progress_label.configure(text=message)
-        
-        colors = {
-            "success": UIStyles.COLOR_SUCCESS,
-            "warning": UIStyles.COLOR_WARNING,
-            "error": UIStyles.COLOR_ERROR,
-            "info": UIStyles.COLOR_TEXT_SECONDARY,
-        }
-        self.progress_label.configure(text_color=colors.get(level, UIStyles.COLOR_TEXT_SECONDARY))
-    
-    def _set_progress(self, value: float) -> None:
-        """Update progress bar (0.0 to 1.0)."""
-        self.progress_bar.set(value)
+    def _set_buttons_state(self, state: str) -> None:
+        """Enable/disable sync buttons."""
+        self.full_sync_btn.configure(state=state)
+        self.companies_btn.configure(state=state)
+        self.ledgers_btn.configure(state=state)
+        self.vouchers_btn.configure(state=state)
     
     def _start_full_sync(self) -> None:
         """Start full synchronization."""
         if self.is_syncing:
-            self._set_status("Sync already in progress...", "warning")
             return
-        
         self._run_sync("full")
     
     def _start_companies_sync(self) -> None:
         """Start companies sync."""
         if self.is_syncing:
-            self._set_status("Sync already in progress...", "warning")
             return
-        
         self._run_sync("companies")
     
     def _start_ledgers_sync(self) -> None:
         """Start ledgers sync."""
         if self.is_syncing:
-            self._set_status("Sync already in progress...", "warning")
             return
-        
         self._run_sync("ledgers")
     
     def _start_vouchers_sync(self) -> None:
         """Start vouchers sync."""
         if self.is_syncing:
-            self._set_status("Sync already in progress...", "warning")
             return
-        
         self._run_sync("vouchers")
     
     def _run_sync(self, sync_type: str) -> None:
         """Run synchronization in background thread."""
         self.is_syncing = True
-        self._set_status("Starting sync...", "info")
-        self._set_progress(0.1)
+        self._set_buttons_state("disabled")
+        self.progress_label.configure(text="Starting sync...", text_color=UIStyles.COLOR_INFO)
+        self.progress_bar.set(0.1)
         
         # Run in background thread
-        thread = threading.Thread(target=self._sync_worker, args=(sync_type,))
-        thread.daemon = True
+        thread = threading.Thread(target=self._sync_worker, args=(sync_type,), daemon=True)
         thread.start()
     
     def _sync_worker(self, sync_type: str) -> None:
@@ -398,65 +326,63 @@ class SyncCenterPage(ctk.CTkScrollableFrame):
                 self.sync_service = SyncService()
             
             if sync_type == "full":
-                self._set_status("Syncing companies...", "info")
-                self._set_progress(0.2)
+                self._update_progress(0.2, "Syncing companies...")
                 result = self.sync_service.sync_companies()
                 
-                self._set_status("Syncing ledgers...", "info")
-                self._set_progress(0.5)
+                self._update_progress(0.5, "Syncing ledgers...")
                 result = self.sync_service.sync_ledgers()
                 
-                self._set_status("Syncing vouchers...", "info")
-                self._set_progress(0.8)
+                self._update_progress(0.8, "Syncing vouchers...")
                 result = self.sync_service.sync_vouchers()
                 
-                self._set_progress(1.0)
+                self._update_progress(1.0, "Sync completed!")
                 
-                if result["success"]:
-                    self._set_status("Full sync completed successfully!", "success")
+                if result.get("success", False):
+                    self._update_progress(1.0, "Full sync completed successfully!", "success")
                 else:
-                    self._set_status(f"Sync completed with errors: {result.get('error', '')}", "warning")
+                    self._update_progress(1.0, f"Sync completed with errors", "warning")
             
             elif sync_type == "companies":
-                self._set_status("Syncing companies...", "info")
-                self._set_progress(0.3)
+                self._update_progress(0.3, "Syncing companies...")
                 result = self.sync_service.sync_companies()
-                self._set_progress(1.0)
-                
-                if result["success"]:
-                    self._set_status(f"Companies synced: {result['records_processed']}", "success")
-                else:
-                    self._set_status(f"Sync failed: {result.get('error', '')}", "error")
+                self._update_progress(1.0, f"Companies: {result.get('records_processed', 0)}", "success" if result.get("success") else "error")
             
             elif sync_type == "ledgers":
-                self._set_status("Syncing ledgers...", "info")
-                self._set_progress(0.3)
+                self._update_progress(0.3, "Syncing ledgers...")
                 result = self.sync_service.sync_ledgers()
-                self._set_progress(1.0)
-                
-                if result["success"]:
-                    self._set_status(f"Ledgers synced: {result['records_processed']}", "success")
-                else:
-                    self._set_status(f"Sync failed: {result.get('error', '')}", "error")
+                self._update_progress(1.0, f"Ledgers: {result.get('records_processed', 0)}", "success" if result.get("success") else "error")
             
             elif sync_type == "vouchers":
-                self._set_status("Syncing vouchers...", "info")
-                self._set_progress(0.3)
+                self._update_progress(0.3, "Syncing vouchers...")
                 result = self.sync_service.sync_vouchers()
-                self._set_progress(1.0)
-                
-                if result["success"]:
-                    self._set_status(f"Vouchers synced: {result['records_processed']}", "success")
-                else:
-                    self._set_status(f"Sync failed: {result.get('error', '')}", "error")
+                self._update_progress(1.0, f"Vouchers: {result.get('records_processed', 0)}", "success" if result.get("success") else "error")
         
         except Exception as e:
-            self._set_status(f"Error: {str(e)}", "error")
+            self._update_progress(0, f"Error: {str(e)}", "error")
             logger.error(f"Sync error: {e}", category="sync", exc_info=True)
         
         finally:
             self.is_syncing = False
-            self._load_sync_history()
+            # Use after() to safely update UI from main thread
+            self.after(0, lambda: self._set_buttons_state("normal"))
+            self.after(0, self._load_sync_history)
+    
+    def _update_progress(self, value: float, message: str, level: str = "info") -> None:
+        """Update progress bar and label safely."""
+        def update():
+            self.progress_bar.set(value)
+            self.progress_label.configure(text=message)
+            
+            colors = {
+                "success": UIStyles.COLOR_SUCCESS,
+                "warning": UIStyles.COLOR_WARNING,
+                "error": UIStyles.COLOR_ERROR,
+                "info": UIStyles.COLOR_TEXT_SECONDARY,
+            }
+            self.progress_label.configure(text_color=colors.get(level, UIStyles.COLOR_TEXT_SECONDARY))
+        
+        # Schedule update on main thread
+        self.after(0, update)
     
     def _load_sync_history(self) -> None:
         """Load and display sync history."""
@@ -471,10 +397,7 @@ class SyncCenterPage(ctk.CTkScrollableFrame):
                 no_logs = ctk.CTkLabel(
                     self.history_frame,
                     text="No sync history available",
-                    font=ctk.CTkFont(
-                        family=UIStyles.FONT_FAMILY,
-                        size=UIStyles.FONT_SIZE_NORMAL,
-                    ),
+                    font=ctk.CTkFont(family=UIStyles.FONT_FAMILY, size=UIStyles.FONT_SIZE_NORMAL),
                     text_color=UIStyles.COLOR_TEXT_MUTED,
                 )
                 no_logs.pack(pady=20)
@@ -495,12 +418,10 @@ class SyncCenterPage(ctk.CTkScrollableFrame):
         )
         item_frame.pack(fill="x", pady=2)
         
-        # Status color
         status_color = UIStyles.COLOR_SUCCESS if log.is_success else (
             UIStyles.COLOR_ERROR if log.is_failed else UIStyles.COLOR_WARNING
         )
         
-        # Status indicator
         status_dot = ctk.CTkLabel(
             item_frame,
             text="?",
@@ -509,51 +430,34 @@ class SyncCenterPage(ctk.CTkScrollableFrame):
         )
         status_dot.pack(side="left", padx=(10, 10), pady=10)
         
-        # Type
         type_label = ctk.CTkLabel(
             item_frame,
             text=log.sync_type.upper(),
-            font=ctk.CTkFont(
-                family=UIStyles.FONT_FAMILY,
-                size=UIStyles.FONT_SIZE_SMALL,
-                weight="bold",
-            ),
+            font=ctk.CTkFont(family=UIStyles.FONT_FAMILY, size=UIStyles.FONT_SIZE_SMALL, weight="bold"),
             text_color=UIStyles.COLOR_TEXT_PRIMARY,
         )
         type_label.pack(side="left", padx=(0, 20), pady=10)
         
-        # Time
         time_label = ctk.CTkLabel(
             item_frame,
-            text=log.formatted_start_time,
-            font=ctk.CTkFont(
-                family=UIStyles.FONT_FAMILY,
-                size=UIStyles.FONT_SIZE_SMALL,
-            ),
+            text=log.formatted_start_time or "Unknown",
+            font=ctk.CTkFont(family=UIStyles.FONT_FAMILY, size=UIStyles.FONT_SIZE_SMALL),
             text_color=UIStyles.COLOR_TEXT_SECONDARY,
         )
         time_label.pack(side="left", padx=(0, 20), pady=10)
         
-        # Records
         records_label = ctk.CTkLabel(
             item_frame,
             text=f"{log.records_processed} records",
-            font=ctk.CTkFont(
-                family=UIStyles.FONT_FAMILY,
-                size=UIStyles.FONT_SIZE_SMALL,
-            ),
+            font=ctk.CTkFont(family=UIStyles.FONT_FAMILY, size=UIStyles.FONT_SIZE_SMALL),
             text_color=UIStyles.COLOR_TEXT_SECONDARY,
         )
         records_label.pack(side="left", pady=10)
         
-        # Status text
         status_label = ctk.CTkLabel(
             item_frame,
             text=log.status.upper(),
-            font=ctk.CTkFont(
-                family=UIStyles.FONT_FAMILY,
-                size=UIStyles.FONT_SIZE_SMALL,
-            ),
+            font=ctk.CTkFont(family=UIStyles.FONT_FAMILY, size=UIStyles.FONT_SIZE_SMALL),
             text_color=status_color,
         )
         status_label.pack(side="right", padx=(0, 10), pady=10)

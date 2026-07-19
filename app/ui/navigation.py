@@ -1,7 +1,7 @@
 """
 Navigation Sidebar for TallySync
 
-Provides sidebar navigation with icons and page switching.
+Provides sidebar navigation with page switching.
 
 Author: OmniMagination
 Version: 1.0.0
@@ -15,12 +15,6 @@ from app.ui.styles import UIStyles
 class NavigationSidebar(ctk.CTkFrame):
     """
     Sidebar navigation component.
-    
-    Features:
-    - Icon-based navigation
-    - Page switching
-    - Collapsible design
-    - Active state indication
     """
     
     def __init__(
@@ -44,13 +38,8 @@ class NavigationSidebar(ctk.CTkFrame):
             width=UIStyles.SIDEBAR_WIDTH,
         )
         
-        # App Logo/Title
         self._create_header()
-        
-        # Navigation Items
         self._create_navigation()
-        
-        # Bottom Section (Settings, etc.)
         self._create_bottom_section()
     
     def _create_header(self) -> None:
@@ -62,7 +51,6 @@ class NavigationSidebar(ctk.CTkFrame):
         )
         header_frame.pack(fill="x", padx=15, pady=(20, 10))
         
-        # App Title
         title_label = ctk.CTkLabel(
             header_frame,
             text="TallySync",
@@ -75,7 +63,6 @@ class NavigationSidebar(ctk.CTkFrame):
         )
         title_label.pack(pady=(10, 5))
         
-        # Version
         version_label = ctk.CTkLabel(
             header_frame,
             text="v1.0.0",
@@ -89,12 +76,13 @@ class NavigationSidebar(ctk.CTkFrame):
     
     def _create_navigation(self) -> None:
         """Create navigation buttons."""
+        # Using text icons that render reliably on Windows
         nav_items = [
-            ("dashboard", "??", "Dashboard"),
-            ("ledgers", "??", "Ledgers"),
-            ("vouchers", "??", "Vouchers"),
-            ("sync", "??", "Sync Center"),
-            ("reports", "??", "Reports"),
+            ("dashboard", "[Dashboard]", "Dashboard"),
+            ("ledgers", "[Ledgers]", "Ledgers"),
+            ("vouchers", "[Vouchers]", "Vouchers"),
+            ("whatsapp", "[WhatsApp]", "WhatsApp"),
+            ("sync", "[Sync]", "Sync Center"),
         ]
         
         nav_frame = ctk.CTkFrame(
@@ -108,7 +96,6 @@ class NavigationSidebar(ctk.CTkFrame):
             button.pack(fill="x", pady=2)
             self.buttons[page_id] = button
         
-        # Set dashboard as active
         self.set_active("dashboard")
     
     def _create_nav_button(
@@ -120,7 +107,7 @@ class NavigationSidebar(ctk.CTkFrame):
         """Create a navigation button."""
         button = ctk.CTkButton(
             self,
-            text=f"{icon}  {label}",
+            text=f"{icon}",
             command=lambda: self._on_button_click(page_id),
             anchor="w",
             height=45,
@@ -131,6 +118,7 @@ class NavigationSidebar(ctk.CTkFrame):
             font=ctk.CTkFont(
                 family=UIStyles.FONT_FAMILY,
                 size=UIStyles.FONT_SIZE_NORMAL,
+                weight="bold",
             ),
         )
         return button
@@ -143,13 +131,11 @@ class NavigationSidebar(ctk.CTkFrame):
         )
         bottom_frame.pack(side="bottom", fill="x", padx=10, pady=10)
         
-        # Settings button
-        settings_btn = self._create_nav_button("settings", "??", "Settings")
+        settings_btn = self._create_nav_button("settings", "[Settings]", "Settings")
         settings_btn.pack(fill="x", pady=2)
         self.buttons["settings"] = settings_btn
         
-        # Logs button
-        logs_btn = self._create_nav_button("logs", "??", "Logs")
+        logs_btn = self._create_nav_button("logs", "[Logs]", "Logs")
         logs_btn.pack(fill="x", pady=2)
         self.buttons["logs"] = logs_btn
     
@@ -180,28 +166,3 @@ class NavigationSidebar(ctk.CTkFrame):
     def get_current_page(self) -> str:
         """Get current active page ID."""
         return self.current_page
-    
-    def collapse(self) -> None:
-        """Collapse sidebar to icon-only mode."""
-        self.configure(width=UIStyles.SIDEBAR_WIDTH_COLLAPSED)
-        for button in self.buttons.values():
-            button.configure(text="", width=50)
-    
-    def expand(self) -> None:
-        """Expand sidebar to full width."""
-        self.configure(width=UIStyles.SIDEBAR_WIDTH)
-        nav_items = [
-            ("dashboard", "??", "Dashboard"),
-            ("ledgers", "??", "Ledgers"),
-            ("vouchers", "??", "Vouchers"),
-            ("sync", "??", "Sync Center"),
-            ("reports", "??", "Reports"),
-            ("settings", "??", "Settings"),
-            ("logs", "??", "Logs"),
-        ]
-        for i, (page_id, icon, label) in enumerate(nav_items):
-            if page_id in self.buttons:
-                self.buttons[page_id].configure(
-                    text=f"{icon}  {label}",
-                    width=UIStyles.SIDEBAR_WIDTH - 20,
-                )
